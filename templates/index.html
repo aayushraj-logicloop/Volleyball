@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html>
-<button onclick="login()">Login with Google</button>
-<button onclick="logout()">Logout</button>
+
 <head>
     <title>Volleyball Team Balancer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 min-h-screen text-white">
+
+    <!-- LOGIN BUTTONS -->
+    <div class="text-center mt-4">
+        <button onclick="login()" class="bg-white text-black px-4 py-2 rounded">
+            Login with Google
+        </button>
+        <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded ml-2">
+            Logout
+        </button>
+    </div>
+
+    <!-- USER INFO -->
+    <div id="user-info" class="text-center mt-4"></div>
 
     <div class="max-w-5xl mx-auto p-6">
 
@@ -18,21 +30,25 @@
             <h2 class="text-xl font-semibold mb-3">Add Player</h2>
 
             <form method="POST" action="/add" class="grid gap-3">
+
+                <!-- ✅ UID (VERY IMPORTANT) -->
+                <input type="hidden" name="uid" id="uid">
+
                 <input class="border p-2 rounded" type="text" name="name" placeholder="Player Name" required>
 
                 <select class="border p-2 rounded" name="position">
-                <option>Setter</option>
-                <option>Libero</option>
-                <option>Outside</option>
-                <option>Middle</option>
-                <option>Opposite</option>
-            </select>
+                    <option>Setter</option>
+                    <option>Libero</option>
+                    <option>Outside</option>
+                    <option>Middle</option>
+                    <option>Opposite</option>
+                </select>
 
                 <input class="border p-2 rounded" type="number" name="rating" placeholder="Rating (0-100)" required>
 
                 <button class="bg-purple-600 text-white p-2 rounded hover:bg-purple-700">
-                Add Player
-            </button>
+                    Add Player
+                </button>
             </form>
         </div>
 
@@ -44,35 +60,35 @@
 
                 {% for p in players %}
                 <label class="cursor-pointer">
-                <input type="checkbox" name="players" value="{{ p[0] }}" class="hidden peer">
+                    <input type="checkbox" name="players" value="{{ p[0] }}" class="hidden peer">
 
-                <div class="bg-white text-black rounded-xl shadow-lg p-4 
-                            peer-checked:ring-4 peer-checked:ring-green-400 
-                            hover:scale-105 transition">
+                    <div class="bg-white text-black rounded-xl shadow-lg p-4 
+                        peer-checked:ring-4 peer-checked:ring-green-400 
+                        hover:scale-105 transition">
 
-                    <!-- EMBEDDED IMAGE -->
-                    <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100%25' height='100%25' fill='%23{{ ['ff6b6b','4ecdc4','45b7d1','f7d794','a29bfe','fd79a8'][p[0] % 6] }}'/%3E%3Ctext x='50%25' y='55%25' font-size='40' text-anchor='middle' fill='white' font-family='Arial'%3E{{ p[1][0]|upper }}%3C/text%3E%3C/svg%3E" class="w-20 h-20 mx-auto mb-2 rounded-full">
+                        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100%25' height='100%25' fill='%23{{ ['ff6b6b','4ecdc4','45b7d1','f7d794','a29bfe','fd79a8'][p[0] % 6] }}'/%3E%3Ctext x='50%25' y='55%25' font-size='40' text-anchor='middle' fill='white'%3E{{ p[1][0]|upper }}%3C/text%3E%3C/svg%3E"
+                            class="w-20 h-20 mx-auto mb-2 rounded-full">
 
-                    <h3 class="text-center font-bold">{{ p[1] }}</h3>
-                    <p class="text-center text-sm text-gray-600">{{ p[2] }}</p>
+                        <h3 class="text-center font-bold">{{ p[1] }}</h3>
+                        <p class="text-center text-sm text-gray-600">{{ p[2] }}</p>
 
-                    <!-- Rating Bar -->
-                    <div class="mt-2">
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full"
-                                 style="width: {{ p[3] }}%"></div>
+                        <div class="mt-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full"
+                                    style="width: {{ p[3] }}%"></div>
+                            </div>
+                            <p class="text-center text-sm mt-1">{{ p[3] }}</p>
                         </div>
-                        <p class="text-center text-sm mt-1">{{ p[3] }}</p>
-                    </div>
 
-                </div>
-            </label> {% endfor %}
+                    </div>
+                </label>
+                {% endfor %}
 
             </div>
 
             <button class="w-full mt-6 bg-green-500 text-white p-3 rounded-xl text-lg hover:bg-green-600">
-            Generate Teams ⚡
-        </button>
+                Generate Teams ⚡
+            </button>
         </form>
 
         <!-- TEAM OUTPUT -->
@@ -83,7 +99,7 @@
                 <h2 class="text-xl font-bold mb-3">🔥 Team A ({{ sum_a }})</h2>
                 {% for p in team_a %}
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background:#4ecdc4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white bg-green-400">
                         {{ p.name[0] }}
                     </div>
                     <span>{{ p.name }} - {{ p.rating }}</span>
@@ -95,7 +111,7 @@
                 <h2 class="text-xl font-bold mb-3">🔥 Team B ({{ sum_b }})</h2>
                 {% for p in team_b %}
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background:#ff6b6b">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white bg-red-400">
                         {{ p.name[0] }}
                     </div>
                     <span>{{ p.name }} - {{ p.rating }}</span>
@@ -107,45 +123,61 @@
         {% endif %}
 
     </div>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCs_fw5VuUw70LQOVijRuvU1oDvRreDEcw",
-  authDomain: "volleyball-team-maker.firebaseapp.com",
-  projectId: "volleyball-team-maker",
-  storageBucket: "volleyball-team-maker.firebasestorage.app",
-  messagingSenderId: "279938274944",
-  appId: "1:279938274944:web:649b97eba29b0f32983865",
-  measurementId: "G-9BHZTQR13C"
-};
+    <!-- FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "volleyball-team-maker.firebaseapp.com",
+            projectId: "volleyball-team-maker",
+            storageBucket: "volleyball-team-maker.appspot.com",
+            messagingSenderId: "279938274944",
+            appId: "1:279938274944:web:649b97eba29b0f32983865"
+        };
 
-window.login = function () {
-  signInWithPopup(auth, provider)
-    .then(result => {
-      console.log("Logged in:", result.user.uid);
-    })
-    .catch(error => console.error(error));
-};
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-window.logout = function () {
-  signOut(auth);
-};
+        // LOGIN
+        window.login = function () {
+            signInWithPopup(auth, provider)
+                .then(result => {
+                    console.log("Logged in:", result.user.uid);
+                })
+                .catch(error => {
+                    alert(error.message);
+                    console.error(error);
+                });
+        };
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("User ID:", user.uid);
-  } else {
-    console.log("Logged out");
-  }
-});
-</script>
+        // LOGOUT
+        window.logout = function () {
+            signOut(auth);
+        };
+
+        // AUTH STATE
+        onAuthStateChanged(auth, (user) => {
+            const userDiv = document.getElementById("user-info");
+            const uidInput = document.getElementById("uid");
+
+            if (user) {
+                if (uidInput) uidInput.value = user.uid;
+
+                userDiv.innerHTML = `
+                    <p class="text-lg font-semibold">Welcome, ${user.displayName}</p>
+                    <img src="${user.photoURL}" 
+                         class="mx-auto mt-2 rounded-full" width="60">
+                `;
+            } else {
+                userDiv.innerHTML = `<p>Not logged in</p>`;
+            }
+        });
+    </script>
+
 </body>
-
 </html>
