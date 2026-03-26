@@ -13,7 +13,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             position TEXT,
-            rating INTEGER
+            rating INTEGER,
+            uid TEXT   -- ✅ NEW COLUMN
         )
     ''')
 
@@ -22,12 +23,12 @@ def init_db():
 
 init_db()
 
-# ---------- GET PLAYERS ----------
-def get_players():
+# ---------- GET PLAYERS (USER SPECIFIC) ----------
+def get_players(uid):
     conn = sqlite3.connect('players.db')
     c = conn.cursor()
 
-    c.execute("SELECT * FROM players")
+    c.execute("SELECT * FROM players WHERE uid = ?", (uid,))
     players = c.fetchall()
 
     conn.close()
@@ -36,6 +37,7 @@ def get_players():
 # ---------- ADD PLAYER ----------
 @app.route("/add", methods=["POST"])
 def add_player():
+    uid = request.form.get("uid")   # ✅ GET UID
     name = request.form["name"]
     position = request.form["position"]
     rating = int(request.form["rating"])
@@ -43,8 +45,10 @@ def add_player():
     conn = sqlite3.connect('players.db')
     c = conn.cursor()
 
-    c.execute("INSERT INTO players (name, position, rating) VALUES (?, ?, ?)",
-              (name, position, rating))
+    c.execute(
+        "INSERT INTO players (name, position, rating, uid) VALUES (?, ?, ?, ?)",
+        (name, position, rating, uid)
+    )
 
     conn.commit()
     conn.close()
@@ -54,12 +58,19 @@ def add_player():
 # ---------- HOME ----------
 @app.route("/")
 def home():
-    players = get_players()
+    uid = request.args.get("uid")   # ✅ get uid from frontend (temporary)
+
+    if not uid:
+        players = []
+    else:
+        players = get_players(uid)
+
     return render_template("index.html", players=players, team_a=None, team_b=None)
 
 # ---------- TEAM GENERATION ----------
 @app.route("/generate", methods=["POST"])
 def generate():
+    uid = request.form.get("uid")  # ✅ IMPORTANT
     selected_ids = request.form.getlist("players")
 
     if not selected_ids:
@@ -68,8 +79,12 @@ def generate():
     conn = sqlite3.connect('players.db')
     c = conn.cursor()
 
-    query = f"SELECT * FROM players WHERE id IN ({','.join(['?']*len(selected_ids))})"
-    c.execute(query, selected_ids)
+    # ✅ ONLY SELECT USER'S PLAYERS
+    query = f"""
+        SELECT * FROM players 
+        WHERE uid = ? AND id IN ({','.join(['?']*len(selected_ids))})
+    """
+    c.execute(query, [uid] + selected_ids)
     players = c.fetchall()
 
     conn.close()
@@ -87,10 +102,8 @@ def generate():
     # ---- BALANCING LOGIC ----
     players_list = sorted(players_list, key=lambda x: x["rating"], reverse=True)
 
-    team_a = []
-    team_b = []
-    sum_a = 0
-    sum_b = 0
+    team_a, team_b = [], []
+    sum_a, sum_b = 0, 0
 
     for player in players_list:
         if sum_a <= sum_b:
@@ -100,7 +113,7 @@ def generate():
             team_b.append(player)
             sum_b += player["rating"]
 
-    all_players = get_players()
+    all_players = get_players(uid)  # ✅ ONLY USER DATA
 
     return render_template("index.html",
                            players=all_players,
