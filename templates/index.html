@@ -29,10 +29,11 @@
         <div class="bg-white text-black p-4 rounded-xl shadow mb-6">
             <h2 class="text-xl font-semibold mb-3">Add Player</h2>
 
+            <!-- ✅ ONLY ONE FORM -->
             <form method="POST" action="/add" class="grid gap-3">
 
-                <!-- ✅ UID (VERY IMPORTANT) -->
-                <input type="hidden" name="uid" id="uid">
+                <!-- ✅ UID -->
+                <input type="hidden" name="uid" class="uid-field">
 
                 <input class="border p-2 rounded" type="text" name="name" placeholder="Player Name" required>
 
@@ -54,6 +55,10 @@
 
         <!-- PLAYER CARDS -->
         <form method="POST" action="/generate">
+
+            <!-- ✅ UID for this form ALSO -->
+            <input type="hidden" name="uid" class="uid-field">
+
             <h2 class="text-2xl font-semibold mb-4">Select Players</h2>
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -143,35 +148,26 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // LOGIN
         window.login = function () {
             signInWithPopup(auth, provider)
-                .then(result => {
-                    console.log("Logged in:", result.user.uid);
-                })
-                .catch(error => {
-                    alert(error.message);
-                    console.error(error);
-                });
+                .catch(error => alert(error.message));
         };
 
-        // LOGOUT
         window.logout = function () {
             signOut(auth);
         };
 
-        // AUTH STATE
         onAuthStateChanged(auth, (user) => {
             const userDiv = document.getElementById("user-info");
-            const uidInput = document.getElementById("uid");
+            const uidFields = document.querySelectorAll(".uid-field");
 
             if (user) {
-                if (uidInput) uidInput.value = user.uid;
+                // ✅ set UID in ALL forms
+                uidFields.forEach(input => input.value = user.uid);
 
                 userDiv.innerHTML = `
                     <p class="text-lg font-semibold">Welcome, ${user.displayName}</p>
-                    <img src="${user.photoURL}" 
-                         class="mx-auto mt-2 rounded-full" width="60">
+                    <img src="${user.photoURL}" class="mx-auto mt-2 rounded-full" width="60">
                 `;
             } else {
                 userDiv.innerHTML = `<p>Not logged in</p>`;
