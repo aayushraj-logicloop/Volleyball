@@ -158,21 +158,27 @@
         };
 
         onAuthStateChanged(auth, (user) => {
-            const userDiv = document.getElementById("user-info");
-            const uidFields = document.querySelectorAll(".uid-field");
+    const userDiv = document.getElementById("user-info");
+    const uidFields = document.querySelectorAll(".uid-field");
 
-            if (user) {
-                // ✅ set UID in ALL forms
-                uidFields.forEach(input => input.value = user.uid);
+    if (user) {
+        // ✅ set UID in ALL forms
+        uidFields.forEach(input => input.value = user.uid);
 
-                userDiv.innerHTML = `
-                    <p class="text-lg font-semibold">Welcome, ${user.displayName}</p>
-                    <img src="${user.photoURL}" class="mx-auto mt-2 rounded-full" width="60">
-                `;
-            } else {
-                userDiv.innerHTML = `<p>Not logged in</p>`;
-            }
-        });
+        userDiv.innerHTML = `
+            <p class="text-lg font-semibold">Welcome, ${user.displayName}</p>
+            <img src="${user.photoURL}" class="mx-auto mt-2 rounded-full" width="60">
+        `;
+
+        // 🔥 VERY IMPORTANT (FIXES YOUR ISSUE)
+        if (!window.location.search.includes("uid=")) {
+            window.location.href = "/?uid=" + user.uid;
+        }
+
+    } else {
+        userDiv.innerHTML = `<p>Not logged in</p>`;
+    }
+});
     </script>
 
 </body>
