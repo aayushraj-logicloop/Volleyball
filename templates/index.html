@@ -2,127 +2,183 @@
 <html>
 
 <head>
-    <title>Volleyball Team Generator</title>
+    <title>Volleyball Team Balancer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 min-h-screen text-white">
 
-    <div class="max-w-4xl mx-auto p-6">
+    <!-- LOGIN BUTTONS -->
+    <div class="text-center mt-4">
+        <button onclick="login()" class="bg-white text-black px-4 py-2 rounded">
+            Login with Google
+        </button>
+        <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded ml-2">
+            Logout
+        </button>
+    </div>
 
-        <h1 class="text-4xl font-bold text-center mb-6">🏐 Team Generator</h1>
+    <!-- USER INFO -->
+    <div id="user-info" class="text-center mt-4"></div>
+
+    <div class="max-w-5xl mx-auto p-6">
+
+        <h1 class="text-4xl font-bold text-center mb-6">🏐 Team Balancer</h1>
 
         <!-- ADD PLAYER -->
-        <div class="bg-white text-black p-4 rounded-xl mb-6">
+        <div class="bg-white text-black p-4 rounded-xl shadow mb-6">
             <h2 class="text-xl font-semibold mb-3">Add Player</h2>
 
-            <input id="name" class="border p-2 rounded w-full mb-2" placeholder="Player Name">
-            <input id="rating" type="number" class="border p-2 rounded w-full mb-2" placeholder="Rating (0-100)">
+            <!-- ✅ ONLY ONE FORM -->
+            <form method="POST" action="/add" class="grid gap-3">
 
-            <button onclick="addPlayer()" class="bg-purple-600 text-white px-4 py-2 rounded w-full">
-                Add Player
+                <!-- ✅ UID -->
+                <input type="hidden" name="uid" class="uid-field">
+
+                <input class="border p-2 rounded" type="text" name="name" placeholder="Player Name" required>
+
+                <select class="border p-2 rounded" name="position">
+                    <option>Setter</option>
+                    <option>Libero</option>
+                    <option>Outside</option>
+                    <option>Middle</option>
+                    <option>Opposite</option>
+                </select>
+
+                <input class="border p-2 rounded" type="number" name="rating" placeholder="Rating (0-100)" required>
+
+                <button class="bg-purple-600 text-white p-2 rounded hover:bg-purple-700">
+                    Add Player
+                </button>
+            </form>
+        </div>
+
+        <!-- PLAYER CARDS -->
+        <form method="POST" action="/generate">
+
+            <!-- ✅ UID for this form ALSO -->
+            <input type="hidden" name="uid" class="uid-field">
+
+            <h2 class="text-2xl font-semibold mb-4">Select Players</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+                {% for p in players %}
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="players" value="{{ p[0] }}" class="hidden peer">
+
+                    <div class="bg-white text-black rounded-xl shadow-lg p-4 
+                        peer-checked:ring-4 peer-checked:ring-green-400 
+                        hover:scale-105 transition">
+
+                        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100%25' height='100%25' fill='%23{{ ['ff6b6b','4ecdc4','45b7d1','f7d794','a29bfe','fd79a8'][p[0] % 6] }}'/%3E%3Ctext x='50%25' y='55%25' font-size='40' text-anchor='middle' fill='white'%3E{{ p[1][0]|upper }}%3C/text%3E%3C/svg%3E"
+                            class="w-20 h-20 mx-auto mb-2 rounded-full">
+
+                        <h3 class="text-center font-bold">{{ p[1] }}</h3>
+                        <p class="text-center text-sm text-gray-600">{{ p[2] }}</p>
+
+                        <div class="mt-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full"
+                                    style="width: {{ p[3] }}%"></div>
+                            </div>
+                            <p class="text-center text-sm mt-1">{{ p[3] }}</p>
+                        </div>
+
+                    </div>
+                </label>
+                {% endfor %}
+
+            </div>
+
+            <button class="w-full mt-6 bg-green-500 text-white p-3 rounded-xl text-lg hover:bg-green-600">
+                Generate Teams ⚡
             </button>
-        </div>
+        </form>
 
-        <!-- PLAYER LIST -->
-        <div id="players" class="grid grid-cols-2 gap-3 mb-6"></div>
+        <!-- TEAM OUTPUT -->
+        {% if team_a %}
+        <div class="mt-8 grid md:grid-cols-2 gap-6">
 
-        <!-- GENERATE BUTTON -->
-        <button onclick="generateTeams()" class="w-full bg-green-500 p-3 rounded text-lg">
-            Generate Teams ⚡
-        </button>
-
-        <!-- OUTPUT -->
-        <div class="grid grid-cols-2 gap-6 mt-6">
-            <div>
-                <h2 class="text-xl font-bold">Team A</h2>
-                <div id="teamA"></div>
+            <div class="bg-white text-black p-4 rounded-xl shadow">
+                <h2 class="text-xl font-bold mb-3">🔥 Team A ({{ sum_a }})</h2>
+                {% for p in team_a %}
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white bg-green-400">
+                        {{ p.name[0] }}
+                    </div>
+                    <span>{{ p.name }} - {{ p.rating }}</span>
+                </div>
+                {% endfor %}
             </div>
-            <div>
-                <h2 class="text-xl font-bold">Team B</h2>
-                <div id="teamB"></div>
+
+            <div class="bg-white text-black p-4 rounded-xl shadow">
+                <h2 class="text-xl font-bold mb-3">🔥 Team B ({{ sum_b }})</h2>
+                {% for p in team_b %}
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white bg-red-400">
+                        {{ p.name[0] }}
+                    </div>
+                    <span>{{ p.name }} - {{ p.rating }}</span>
+                </div>
+                {% endfor %}
             </div>
+
         </div>
+        {% endif %}
 
     </div>
 
-    <script>
-        let players = [];
+    <!-- FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        function addPlayer() {
-            let name = document.getElementById("name").value;
-            let rating = parseInt(document.getElementById("rating").value);
+        const firebaseConfig = {
+            apiKey: "AIzaSyCs_fw5VuUw70LQOVijRuvU1oDvRreDEcw",
+            authDomain: "volleyball-team-maker.firebaseapp.com",
+            projectId: "volleyball-team-maker",
+            storageBucket: "volleyball-team-maker.appspot.com",
+            messagingSenderId: "279938274944",
+            appId: "1:279938274944:web:649b97eba29b0f32983865"
+        };
 
-            if (!name || !rating) {
-                alert("Enter valid details");
-                return;
-            }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-            players.push({ name, rating });
+        window.login = function () {
+            signInWithPopup(auth, provider)
+                .catch(error => alert(error.message));
+        };
 
-            document.getElementById("name").value = "";
-            document.getElementById("rating").value = "";
+        window.logout = function () {
+            signOut(auth);
+        };
 
-            displayPlayers();
+        onAuthStateChanged(auth, (user) => {
+    const userDiv = document.getElementById("user-info");
+    const uidFields = document.querySelectorAll(".uid-field");
+
+    if (user) {
+        // ✅ set UID in ALL forms
+        uidFields.forEach(input => input.value = user.uid);
+
+        userDiv.innerHTML = `
+            <p class="text-lg font-semibold">Welcome, ${user.displayName}</p>
+            <img src="${user.photoURL}" class="mx-auto mt-2 rounded-full" width="60">
+        `;
+
+        // 🔥 VERY IMPORTANT (FIXES YOUR ISSUE)
+        if (!window.location.search.includes("uid=")) {
+            window.location.href = "/?uid=" + user.uid;
         }
 
-        function displayPlayers() {
-            let container = document.getElementById("players");
-            container.innerHTML = "";
-
-            players.forEach((p, i) => {
-                container.innerHTML += `
-                    <label class="bg-white text-black p-3 rounded cursor-pointer">
-                        <input type="checkbox" value="${i}" class="mr-2">
-                        ${p.name} (${p.rating})
-                    </label>
-                `;
-            });
-        }
-
-        function generateTeams() {
-            let checkboxes = document.querySelectorAll("#players input:checked");
-
-            if (checkboxes.length < 2) {
-                alert("Select at least 2 players");
-                return;
-            }
-
-            let selected = [];
-
-            checkboxes.forEach(cb => {
-                selected.push(players[cb.value]);
-            });
-
-            // Shuffle
-            selected.sort(() => Math.random() - 0.5);
-
-            let teamA = [];
-            let teamB = [];
-
-            selected.forEach((p, i) => {
-                if (i % 2 === 0) teamA.push(p);
-                else teamB.push(p);
-            });
-
-            displayTeams(teamA, teamB);
-        }
-
-        function displayTeams(teamA, teamB) {
-            let aDiv = document.getElementById("teamA");
-            let bDiv = document.getElementById("teamB");
-
-            aDiv.innerHTML = "";
-            bDiv.innerHTML = "";
-
-            teamA.forEach(p => {
-                aDiv.innerHTML += `<p>${p.name} (${p.rating})</p>`;
-            });
-
-            teamB.forEach(p => {
-                bDiv.innerHTML += `<p>${p.name} (${p.rating})</p>`;
-            });
-        }
+    } else {
+        userDiv.innerHTML = `<p>Not logged in</p>`;
+    }
+});
     </script>
 
 </body>
